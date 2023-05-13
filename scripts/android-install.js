@@ -107,7 +107,7 @@ module.exports = function (context) {
     });
   } else {
     // create directory
-    childProcess.spawnSync("mkdir -p " + targetDir);
+    childProcess.execSync("mkdir -p " + targetDir);
 
     // sync the content
     targetFiles.forEach(function (f) {
