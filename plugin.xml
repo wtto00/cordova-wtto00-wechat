@@ -37,8 +37,8 @@
         <config-file target="*-Info.plist" parent="LSApplicationQueriesSchemes">
             <array>
                 <string>weixin</string>
-                <string>wechat</string>
                 <string>weixinULAPI</string>
+                <string>weixinURLParamsAPI</string>
             </array>
         </config-file>
 
@@ -70,10 +70,11 @@
         <source-file src="src/ios/AppDelegate+Wechat.m" />
 
         <!-- Wechat Official -->
-        <header-file src="src/ios/libs/OpenSDK1.8.6.2/WXApi.h" />
-        <header-file src="src/ios/libs/OpenSDK1.8.6.2/WXApiObject.h" />
-        <header-file src="src/ios/libs/OpenSDK1.8.6.2/WechatAuthSDK.h" />
-        <source-file src="src/ios/libs/OpenSDK1.8.6.2/libWeChatSDK.a" framework="true" />
+        <podspec>
+            <pods>
+                <pod name="WechatOpenSDK-XCFramework" />
+            </pods>
+        </podspec>
 
         <!-- Other required frameworks -->
         <framework src="libz.tbd" />

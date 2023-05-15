@@ -7,8 +7,8 @@
 //
 
 #import <Cordova/CDV.h>
-#import "WXApi.h"
-#import "WXApiObject.h"
+#import <WXApi.h>
+#import <WXApiObject.h>
 
 enum  CDVWechatSharingType {
     CDVWXSharingTypeApp = 1,
