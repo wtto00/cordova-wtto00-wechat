@@ -3,8 +3,6 @@
 module.exports = function (context) {
   var path = require("path"),
     fs = require("fs"),
-    childProcess = require("child_process"),
-    semver = require("semver"),
     projectRoot = context.opts.projectRoot,
     plugins = context.opts.plugins || [];
 
@@ -107,7 +105,7 @@ module.exports = function (context) {
     });
   } else {
     // create directory
-    childProcess.execSync("mkdir -p " + targetDir);
+    fs.mkdirSync(targetDir, { recursive: true });
 
     // sync the content
     targetFiles.forEach(function (f) {
