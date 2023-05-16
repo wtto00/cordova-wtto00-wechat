@@ -1,13 +1,23 @@
-# cordova-plugin-wechat
+# cordova-wtto00-wechat
 
 微信 cordova 插件
 
 参考：[xu-li/cordova-plugin-wechat](https://github.com/xu-li/cordova-plugin-wechat)
 
+- 🌟 添加 TS 类型提示
+- 🐛 修改不支持 Android 13 的问题
+- 🌟 改用在线最新微信 SDK 包
+
+## 支持平台
+
+- android
+- ios
+-
+
 ## 安装
 
 ```shell
-cordova plugin add https://github.com/wtto00/cordova-plugin-wechat --variable WECHATAPPID=YOUR_WECHAT_APPID --variable UNIVERSALLINK=YOUR_UNIVERSAL_LINK
+cordova plugin add cordova-wtto00-wechat --variable WECHATAPPID=YOUR_WECHAT_APPID --variable UNIVERSALLINK=YOUR_UNIVERSAL_LINK
 ```
 
 #### 移除
@@ -20,7 +30,7 @@ cordova plugin rm cordova-plugin-wechat --variable WECHATAPPID=YOUR_WECHAT_APPID
 
 #### 检查微信是否安装
 
-```Javascript
+```javascript
 Wechat.isInstalled(function (installed) {
     alert("Wechat installed: " + (installed ? "Yes" : "No"));
 }, function (reason) {
@@ -30,7 +40,7 @@ Wechat.isInstalled(function (installed) {
 
 #### 微信认证
 
-```Javascript
+```javascript
 var scope = "snsapi_userinfo",
     state = "_" + (+new Date());
 Wechat.auth(scope, state, function (response) {
@@ -43,7 +53,7 @@ Wechat.auth(scope, state, function (response) {
 
 #### 分享文本
 
-```Javascript
+```javascript
 Wechat.share({
     text: "This is just a plain string",
     scene: Wechat.Scene.TIMELINE   // share to Timeline
@@ -56,7 +66,7 @@ Wechat.share({
 
 #### 分享媒体（例如链接，照片，音乐，视频等）
 
-```Javascript
+```javascript
 Wechat.share({
     message: {
         title: "Hi, there",
@@ -77,7 +87,7 @@ Wechat.share({
 
 ##### 分享网页
 
-```Javascript
+```javascript
 Wechat.share({
     message: {
         ...
@@ -96,7 +106,7 @@ Wechat.share({
 
 ##### 分享到小程序
 
-```Javascript
+```javascript
 Wechat.share({
     message: {
         ...
@@ -120,7 +130,7 @@ Wechat.share({
 
 ## 选择卡券包
 
-```Javascript
+```javascript
 // See https://github.com/xu-li/cordova-plugin-wechat-example/blob/master/server/payment_demo.php for php demo
 var params = {
     partnerid: '10000100', // merchant id
@@ -139,7 +149,7 @@ Wechat.sendPaymentRequest(params, function () {
 
 ## 发送支付请求
 
-```Javascript
+```javascript
 //offical doc https://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1496561749_f7T6D
 var params = {
     timeStamp: '1510198391', // timeStamp
@@ -157,7 +167,7 @@ Wechat.chooseInvoiceFromWX(params,function(data){
 
 ## 打开微信微信小程序
 
-```Javascript
+```javascript
 //offical doc https://open.weixin.qq.com/cgi-bin/showdocument?action=dir_list&t=resource/res_list&verify=1&id=21526646437Y6nEC&token=&lang=zh_CN
 var params = {
     userName: 'gh_d43f693ca31f', // userName

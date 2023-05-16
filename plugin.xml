@@ -3,15 +3,15 @@
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
     xmlns:rim="http://www.blackberry.com/ns/widgets"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    id="cordova-plugin-wechat"
+    id="cordova-wtto00-wechat"
     version="1.0.0">
 
     <name>Wechat</name>
     <description>微信 cordova 插件</description>
     <license>MIT</license>
     <keywords>cordova,wechat,weixin,share</keywords>
-    <repo>https://github.com/wtto00/cordova-plugin-wechat.git</repo>
-    <issue>https://github.com/wtto00/cordova-plugin-wechat/issues</issue>
+    <repo>https://github.com/wtto00/cordova-wtto00-wechat.git</repo>
+    <issue>https://github.com/wtto00/cordova-wtto00-wechat/issues</issue>
 
     <!-- add this to your config.xml -->
     <!-- <preference name="WECHATAPPID" value="YOUR_WECHAT_APP_ID_HERE" /> -->
@@ -141,6 +141,6 @@
 
         <source-file src="src/android/Wechat.java" target-dir="src/wang/tato/wechat" />
         <source-file src="src/android/Util.java" target-dir="src/wang/tato/wechat" />
-        <framework src="android-build.gradle" custom="true" type="gradleReference" />
+        <framework src="src/android/android-build.gradle" custom="true" type="gradleReference" />
     </platform>
 </plugin>
