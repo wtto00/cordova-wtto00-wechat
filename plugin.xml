@@ -71,9 +71,7 @@
 
         <!-- Wechat Official -->
         <podspec>
-            <config>
-                <source />
-            </config>
+            <config></config>
             <pods>
                 <pod name="WechatOpenSDK-XCFramework" />
             </pods>
