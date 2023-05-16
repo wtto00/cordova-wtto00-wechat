@@ -3,6 +3,13 @@
   "version": "1.0.0",
   "description": "微信 cordova 插件",
   "types": "./types/index.d.ts",
+  "files": [
+    "src",
+    "types",
+    "www",
+    "scripts",
+    "plugin.xml"
+  ],
   "cordova": {
     "id": "cordova-wtto00-wechat",
     "platforms": [

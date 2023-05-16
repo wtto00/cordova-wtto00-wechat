@@ -141,6 +141,6 @@
 
         <source-file src="src/android/Wechat.java" target-dir="src/wang/tato/wechat" />
         <source-file src="src/android/Util.java" target-dir="src/wang/tato/wechat" />
-        <framework src="android-build.gradle" custom="true" type="gradleReference" />
+        <framework src="src/android/android-build.gradle" custom="true" type="gradleReference" />
     </platform>
 </plugin>
