@@ -1,14 +1,17 @@
 package wang.tato.wechat;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Environment;
-import android.os.Build;
 import android.util.Base64;
 import android.util.Log;
 import android.webkit.URLUtil;
+
+import androidx.core.content.FileProvider;
 
 import com.tencent.mm.opensdk.modelbiz.WXLaunchMiniProgram;
 import com.tencent.mm.opensdk.modelmsg.SendAuth;
@@ -40,11 +43,12 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.ByteArrayInputStream;
 import org.apache.cordova.CordovaPreferences;
+import java.util.Date;
 
 public class Wechat extends CordovaPlugin {
 
@@ -130,7 +134,7 @@ public class Wechat extends CordovaPlugin {
 
     protected void initWXAPI() {
         IWXAPI api = getWxAPI(cordova.getActivity());
-        if(wx_preferences == null) {
+        if (wx_preferences == null) {
             wx_preferences = preferences;
         }
         if (api != null) {
@@ -140,6 +144,7 @@ public class Wechat extends CordovaPlugin {
 
     /**
      * Get weixin api
+     * 
      * @param ctx
      * @return
      */
@@ -167,10 +172,10 @@ public class Wechat extends CordovaPlugin {
             return sendPaymentRequest(args, callbackContext);
         } else if (action.equals("isWXAppInstalled")) {
             return isInstalled(callbackContext);
-        }else if (action.equals("chooseInvoiceFromWX")){
+        } else if (action.equals("chooseInvoiceFromWX")) {
             return chooseInvoiceFromWX(args, callbackContext);
-        }else if(action.equals("openMiniProgram")){
-            return openMiniProgram(args,callbackContext);
+        } else if (action.equals("openMiniProgram")) {
+            return openMiniProgram(args, callbackContext);
         }
 
         return false;
@@ -199,7 +204,7 @@ public class Wechat extends CordovaPlugin {
         req.transaction = buildTransaction();
 
         if (params.has(KEY_ARG_MESSAGE)) {
-            //小程序卡片单独构建
+            // 小程序卡片单独构建
             JSONObject message = params.getJSONObject(KEY_ARG_MESSAGE);
             if (message.has(KEY_ARG_MESSAGE_MEDIA)) {
                 JSONObject media = message.getJSONObject(KEY_ARG_MESSAGE_MEDIA);
@@ -315,7 +320,7 @@ public class Wechat extends CordovaPlugin {
             // final String appid = params.getString("appid");
             // final String savedAppid = getSavedAppId(cordova.getActivity());
             // if (!savedAppid.equals(appid)) {
-            //     this.saveAppId(cordova.getActivity(), appid);
+            // this.saveAppId(cordova.getActivity(), appid);
             // }
             req.appId = getAppId(preferences);
             req.partnerId = params.has("mch_id") ? params.getString("mch_id") : params.getString("partnerid");
@@ -405,7 +410,6 @@ public class Wechat extends CordovaPlugin {
         return true;
     }
 
-
     protected WXMediaMessage buildSharingMessage(JSONObject params)
             throws JSONException {
         Log.d(TAG, "Start building message.");
@@ -472,11 +476,14 @@ public class Wechat extends CordovaPlugin {
                     break;
 
                 case TYPE_WECHAT_SHARING_IMAGE:
-                    Bitmap image = getBitmap(message.getJSONObject(KEY_ARG_MESSAGE_MEDIA), KEY_ARG_MESSAGE_MEDIA_IMAGE, 0);
-                    // give some tips to user           
-                    if(image != null) {
-                        mediaObject = new WXImageObject(image);
-                        image.recycle();
+                    // 分享大图，使用 content:// 链接
+                    // https://developers.weixin.qq.com/community/develop/doc/0004886026c1a8402d2a040ee5b401
+                    String path = getImageFile(message.getJSONObject(KEY_ARG_MESSAGE_MEDIA),
+                            KEY_ARG_MESSAGE_MEDIA_IMAGE);
+                    if (path != null) {
+                        WXImageObject imageObject = new WXImageObject();
+                        imageObject.setImagePath(path);
+                        mediaObject = imageObject;
                     }
                     break;
 
@@ -498,15 +505,16 @@ public class Wechat extends CordovaPlugin {
                     try {
                         miniProgramObj.webpageUrl = media.getString(KEY_ARG_MESSAGE_MEDIA_WEBPAGEURL); // 兼容低版本的网页链接
                         miniProgramObj.miniprogramType = media.getInt(KEY_ARG_MESSAGE_MEDIA_MINIPROGRAMTYPE);// 正式版:0，测试版:1，体验版:2
-                        miniProgramObj.userName = media.getString(KEY_ARG_MESSAGE_MEDIA_USERNAME);     // 小程序原始id
-                        miniProgramObj.path = media.getString(KEY_ARG_MESSAGE_MEDIA_PATH);            //小程序页面路径
+                        miniProgramObj.userName = media.getString(KEY_ARG_MESSAGE_MEDIA_USERNAME); // 小程序原始id
+                        miniProgramObj.path = media.getString(KEY_ARG_MESSAGE_MEDIA_PATH); // 小程序页面路径
                         miniProgramObj.withShareTicket = media.getBoolean(KEY_ARG_MESSAGE_MEDIA_WITHSHARETICKET); // 是否使用带shareTicket的分享
                         wxMediaMessage = new WXMediaMessage(miniProgramObj);
-                        wxMediaMessage.title = message.getString(KEY_ARG_MESSAGE_TITLE);                    // 小程序消息title
-                        wxMediaMessage.description = message.getString(KEY_ARG_MESSAGE_DESCRIPTION);               // 小程序消息desc
-                        wxMediaMessage.thumbData = Util.readBytes(getFileInputStream(media.getString(KEY_ARG_MESSAGE_MEDIA_HDIMAGEDATA))); // 小程序消息封面图片，小于128k
+                        wxMediaMessage.title = message.getString(KEY_ARG_MESSAGE_TITLE); // 小程序消息title
+                        wxMediaMessage.description = message.getString(KEY_ARG_MESSAGE_DESCRIPTION); // 小程序消息desc
+                        wxMediaMessage.thumbData = Util
+                                .readBytes(getFileInputStream(media.getString(KEY_ARG_MESSAGE_MEDIA_HDIMAGEDATA))); // 小程序消息封面图片，小于128k
                         return wxMediaMessage;
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         Log.e(TAG, e.getMessage());
                     }
                     break;
@@ -528,6 +536,79 @@ public class Wechat extends CordovaPlugin {
 
     private String buildTransaction(final String type) {
         return type + System.currentTimeMillis();
+    }
+
+    // 判断微信版本是否为7.0.13及以上
+    private boolean checkVersionValid(Context context) {
+        return wxAPI.getWXAppSupportAPI() >= 0x27000D00;
+    }
+
+    // 判断Android版本是否7.0及以上
+    private boolean checkAndroidNotBelowN() {
+        return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N;
+    }
+
+    private String getFileUri(File file) {
+        if (file == null || !file.exists()) {
+            return null;
+        }
+
+        Uri contentUri = FileProvider.getUriForFile(webView.getContext(),
+                cordova.getActivity().getPackageName() + ".wechat.fileProvider",
+                file);
+
+        // 授权给微信访问路径
+        webView.getContext().grantUriPermission("com.tencent.mm",
+                contentUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        return contentUri.toString();
+    }
+
+    protected String getImageFile(JSONObject message, String key) {
+        Bitmap bmp = null;
+        String url = null;
+
+        try {
+            if (!message.has(key)) {
+                return null;
+            }
+
+            url = message.getString(key);
+
+            // get input stream
+            InputStream inputStream = getFileInputStream(url);
+            if (inputStream == null) {
+                return null;
+            }
+
+            // decode it
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            bmp = BitmapFactory.decodeStream(inputStream, null, options);
+
+            FileOutputStream out = null;
+            File cacheDir = Util.getCacheFolder(webView.getContext());
+            Date date = new Date();
+            File cacheFile = new File(cacheDir, String.format("%d.png", date.getTime()));
+            out = new FileOutputStream(cacheFile);
+            boolean compress = bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
+            out.flush();
+
+            inputStream.close();
+
+            if (checkVersionValid(webView.getContext()) && checkAndroidNotBelowN()) {
+                return getFileUri(cacheFile);
+            } else {
+                return cacheFile.getPath();
+            }
+        } catch (JSONException e) {
+            bmp = null;
+            e.printStackTrace();
+        } catch (IOException e) {
+            bmp = null;
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     protected Bitmap getThumbnail(JSONObject message, String key) {
@@ -578,8 +659,8 @@ public class Wechat extends CordovaPlugin {
 
                 int length = scaled.getRowBytes() * scaled.getHeight();
 
-                if(length > (maxSize/10)*1024) {
-                    scaled = compressImage(scaled,(maxSize/10));
+                if (length > (maxSize / 10) * 1024) {
+                    scaled = compressImage(scaled, (maxSize / 10));
                 }
 
                 bmp = scaled;
@@ -598,11 +679,10 @@ public class Wechat extends CordovaPlugin {
         return bmp;
     }
 
-
     /**
      * compress bitmap by quility
      */
-    protected  Bitmap compressImage(Bitmap image,Integer maxSize) {
+    protected Bitmap compressImage(Bitmap image, Integer maxSize) {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.JPEG, 100, baos);
@@ -628,9 +708,10 @@ public class Wechat extends CordovaPlugin {
             if (URLUtil.isHttpUrl(url) || URLUtil.isHttpsUrl(url)) {
 
                 // if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-                //     if (!cordova.hasPermission(ANDROID_WRITE_EXTERNAL_STORAGE)) {
-                //         cordova.requestPermission(this, REQUEST_CODE_ENABLE_PERMISSION, ANDROID_WRITE_EXTERNAL_STORAGE);
-                //     }
+                // if (!cordova.hasPermission(ANDROID_WRITE_EXTERNAL_STORAGE)) {
+                // cordova.requestPermission(this, REQUEST_CODE_ENABLE_PERMISSION,
+                // ANDROID_WRITE_EXTERNAL_STORAGE);
+                // }
                 // }
 
                 File file = Util.downloadAndCacheFile(webView.getContext(), url);
@@ -645,7 +726,7 @@ public class Wechat extends CordovaPlugin {
 
                 Log.d(TAG, String.format("File was downloaded and cached to %s.", file.getAbsolutePath()));
 
-            } else if (url.startsWith("data:image")) {  // base64 image
+            } else if (url.startsWith("data:image")) { // base64 image
 
                 String imageDataBytes = url.substring(url.indexOf(",") + 1);
                 byte imageBytes[] = Base64.decode(imageDataBytes.getBytes(), Base64.DEFAULT);
@@ -655,7 +736,8 @@ public class Wechat extends CordovaPlugin {
 
             } else if (url.startsWith(EXTERNAL_STORAGE_IMAGE_PREFIX)) { // external path
 
-                url = Environment.getExternalStorageDirectory().getAbsolutePath() + url.substring(EXTERNAL_STORAGE_IMAGE_PREFIX.length());
+                url = Environment.getExternalStorageDirectory().getAbsolutePath()
+                        + url.substring(EXTERNAL_STORAGE_IMAGE_PREFIX.length());
                 inputStream = new FileInputStream(url);
 
                 Log.d(TAG, String.format("File is located on external storage at %s.", url));
@@ -685,9 +767,9 @@ public class Wechat extends CordovaPlugin {
 
     public static String getAppId(CordovaPreferences f_preferences) {
         if (appId == null) {
-            if(f_preferences != null) {
+            if (f_preferences != null) {
                 appId = f_preferences.getString(WXAPPID_PROPERTY_KEY, "");
-            }else if(wx_preferences != null){
+            } else if (wx_preferences != null) {
                 appId = wx_preferences.getString(WXAPPID_PROPERTY_KEY, "");
             }
         }
@@ -697,6 +779,7 @@ public class Wechat extends CordovaPlugin {
 
     /**
      * Get saved app id
+     * 
      * @param ctx
      * @return
      */
@@ -707,12 +790,13 @@ public class Wechat extends CordovaPlugin {
 
     /**
      * Save app id into SharedPreferences
+     * 
      * @param ctx
      * @param id
      */
     public static void saveAppId(Context ctx, String id) {
-        if (id!=null && id.isEmpty()) {
-            return ;
+        if (id != null && id.isEmpty()) {
+            return;
         }
 
         SharedPreferences settings = ctx.getSharedPreferences(PREFS_NAME, 0);
@@ -735,9 +819,10 @@ public class Wechat extends CordovaPlugin {
         callbackContext.sendPluginResult(result);
     }
 
-    protected boolean openMiniProgram(CordovaArgs args, CallbackContext callbackContext){
+    protected boolean openMiniProgram(CordovaArgs args, CallbackContext callbackContext) {
         currentCallbackContext = callbackContext;
-        String appId = getAppId(preferences);; // 填应用AppId
+        String appId = getAppId(preferences);
+        ; // 填应用AppId
         IWXAPI api = WXAPIFactory.createWXAPI(cordova.getActivity(), appId);
 
         final JSONObject params;
@@ -751,12 +836,12 @@ public class Wechat extends CordovaPlugin {
         WXLaunchMiniProgram.Req req = new WXLaunchMiniProgram.Req();
         try {
             req.userName = params.getString(KEY_ARG_MESSAGE_MEDIA_USERNAME); // 填小程序原始id
-            req.path = params.getString(KEY_ARG_MESSAGE_MEDIA_PATH);                  //拉起小程序页面的可带参路径，不填默认拉起小程序首页
+            req.path = params.getString(KEY_ARG_MESSAGE_MEDIA_PATH); // 拉起小程序页面的可带参路径，不填默认拉起小程序首页
             req.miniprogramType = params.getInt(KEY_ARG_MESSAGE_MEDIA_MINIPROGRAMTYPE);// 可选打开 开发版，体验版和正式版
             api.sendReq(req);
-        }catch (Exception e){
+        } catch (Exception e) {
             callbackContext.error(ERROR_INVALID_PARAMETERS);
-            Log.e(TAG,e.getMessage());
+            Log.e(TAG, e.getMessage());
         }
         return true;
     }

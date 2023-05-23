@@ -43,16 +43,9 @@ public class Util {
     }
 
     public static File getCacheFolder(Context context) {
-        File cacheDir = null;
-        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            cacheDir = new File(Environment.getExternalStorageDirectory(), "cache");
-            if (!cacheDir.isDirectory()) {
-                cacheDir.mkdirs();
-            }
-        }
-
-        if(!cacheDir.isDirectory()) {
-            cacheDir = context.getCacheDir(); //get system cache folder
+        File cacheDir = new File(context.getExternalCacheDir(), "wechat");
+        if (!cacheDir.isDirectory()) {
+            cacheDir.mkdirs();
         }
 
         return cacheDir;
@@ -69,7 +62,8 @@ public class Util {
             connection.connect();
 
             if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                Log.e(Wechat.TAG, String.format("Failed to download file from %s, response code: %d.", url, connection.getResponseCode()));
+                Log.e(Wechat.TAG, String.format("Failed to download file from %s, response code: %d.", url,
+                        connection.getResponseCode()));
                 return null;
             }
 
