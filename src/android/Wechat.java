@@ -244,10 +244,13 @@ public class Wechat extends CordovaPlugin {
 
                     // send json exception error
                     callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
+                    return;
                 }
 
                 if (api.sendReq(req)) {
                     Log.i(TAG, "Message has been sent successfully.");
+                    // 分享成功回调
+                    callbackContext.success();
                 } else {
                     Log.i(TAG, "Message has been sent unsuccessfully.");
 
@@ -624,11 +627,11 @@ public class Wechat extends CordovaPlugin {
 
             if (URLUtil.isHttpUrl(url) || URLUtil.isHttpsUrl(url)) {
 
-                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-                    if (!cordova.hasPermission(ANDROID_WRITE_EXTERNAL_STORAGE)) {
-                        cordova.requestPermission(this, REQUEST_CODE_ENABLE_PERMISSION, ANDROID_WRITE_EXTERNAL_STORAGE);
-                    }
-                }
+                // if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+                //     if (!cordova.hasPermission(ANDROID_WRITE_EXTERNAL_STORAGE)) {
+                //         cordova.requestPermission(this, REQUEST_CODE_ENABLE_PERMISSION, ANDROID_WRITE_EXTERNAL_STORAGE);
+                //     }
+                // }
 
                 File file = Util.downloadAndCacheFile(webView.getContext(), url);
 
