@@ -2,9 +2,7 @@
 
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
     xmlns:rim="http://www.blackberry.com/ns/widgets"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    id="cordova-wtto00-wechat"
-    version="1.0.0">
+    xmlns:android="http://schemas.android.com/apk/res/android" id="cordova-wtto00-wechat" version="1.0.0">
 
     <name>Wechat</name>
     <description>微信 cordova 插件</description>
@@ -71,9 +69,7 @@
 
         <!-- Wechat Official -->
         <podspec>
-            <config>
-                <source />
-            </config>
+            <config></config>
             <pods>
                 <pod name="WechatOpenSDK-XCFramework" />
             </pods>
@@ -117,30 +113,25 @@
         </config-file>
 
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
-            <activity
-                android:name=".wxapi.WXEntryActivity"
-                android:label="@string/launcher_name"
-                android:exported="true"
-                android:taskAffinity="$PACKAGE_NAME"
-                android:launchMode="singleTask">
+            <activity android:name=".wxapi.WXEntryActivity" android:label="@string/launcher_name" android:exported="true" android:taskAffinity="$PACKAGE_NAME" android:launchMode="singleTask">
                 <intent-filter>
                     <action android:name="android.intent.action.VIEW" />
                     <category android:name="android.intent.category.DEFAULT" />
                     <data android:scheme="$WECHATAPPID" />
                 </intent-filter>
             </activity>
-            <activity
-                android:name=".wxapi.WXPayEntryActivity"
-                android:label="@string/launcher_name"
-                android:exported="true"
-                android:launchMode="singleTop">
+            <activity android:name=".wxapi.WXPayEntryActivity" android:label="@string/launcher_name" android:exported="true" android:launchMode="singleTop">
                 <intent-filter>
                     <action android:name="android.intent.action.VIEW" />
                     <category android:name="android.intent.category.DEFAULT" />
                     <data android:scheme="$WECHATAPPID" />
                 </intent-filter>
             </activity>
+            <provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.wechat.fileProvider" android:exported="false" android:grantUriPermissions="true">
+                <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/wechat_provider_paths" />
+            </provider>
         </config-file>
+        <source-file src="src/android/wechat_provider_paths.xml" target-dir="res/xml" />
 
         <source-file src="src/android/Wechat.java" target-dir="src/wang/tato/wechat" />
         <source-file src="src/android/Util.java" target-dir="src/wang/tato/wechat" />
