@@ -12,7 +12,6 @@
 
 - android
 - ios
--
 
 ## 安装
 

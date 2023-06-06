@@ -102,11 +102,6 @@
         </config-file>
 
         <config-file target="AndroidManifest.xml" parent="/*">
-            <uses-permission android:name="android.permission.INTERNET" />
-            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-            <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-            <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
             <queries>
                 <package android:name="com.tencent.mm" />
             </queries>
@@ -127,6 +122,7 @@
                     <data android:scheme="$WECHATAPPID" />
                 </intent-filter>
             </activity>
+            <activity-alias android:name="${applicationId}.wxapi.WXEntryActivity" android:exported="true" android:targetActivity=".wxapi.WXEntryActivity" />
             <provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.wechat.fileProvider" android:exported="false" android:grantUriPermissions="true">
                 <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/wechat_provider_paths" />
             </provider>
